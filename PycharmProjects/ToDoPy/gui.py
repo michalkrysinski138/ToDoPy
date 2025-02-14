@@ -20,6 +20,7 @@ def add_task():
     else:
         messagebox.showwarning("Input Error", "Please enter a task name")
 
+
 def edit_task(task_id):
 
     new_task_name = simpledialog.askstring("Edit Task", "Enter new task name:")
@@ -28,9 +29,11 @@ def edit_task(task_id):
         update_task_name_in_db(task_id, new_task_name)
         display_tasks()
 
+
 def connect_db():
     print("Łączenie z bazą danych...")
     return sqlite3.connect('ToDoPy.db', timeout=10)
+
 
 def update_task_name_in_db(task_id, new_name):
     conn = connect_db()
@@ -44,18 +47,38 @@ def display_tasks():
     for widget in task_frame.winfo_children():
         widget.destroy()
 
+
     tasks = get_tasks()
     for task in tasks:
-        task_id = task[0]  # Pobieramy ID zadania
+        task_id = task[0]
         task_name = task[1]
 
-        # Wyświetlanie nazwy zadania
+
         task_label = tk.Label(task_frame, text=task_name, width=50)
         task_label.pack()
 
-        # Dodanie przycisku edytowania
+
         edit_button = tk.Button(task_frame, text="Edit", command=lambda t_id=task_id: edit_task(t_id))
         edit_button.pack()
+
+
+        delete_button = tk.Button(task_frame, text="Delete", command=lambda t_id=task_id: delete_task(t_id))
+        delete_button.pack()
+
+
+def delete_task(task_id):
+
+    delete_task_from_db(task_id)
+    display_tasks()
+
+
+def delete_task_from_db(task_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+    conn.commit()
+    conn.close()
+
 
 def run_gui():
     global task_entry, task_frame
