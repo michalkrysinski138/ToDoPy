@@ -1,13 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
-from db import create_task, get_tasks, update_task
 import tkinter.simpledialog as simpledialog
-
-import tkinter as tk
-from tkinter import messagebox
-from db import create_task, get_tasks
+from db import create_task, get_tasks, update_task
 import sqlite3
-
 
 def add_task():
     global task_entry
@@ -22,7 +17,6 @@ def add_task():
 
 
 def edit_task(task_id):
-
     new_task_name = simpledialog.askstring("Edit Task", "Enter new task name:")
 
     if new_task_name:
@@ -43,18 +37,25 @@ def update_task_name_in_db(task_id, new_name):
     conn.close()
 
 
+def mark_task_as_completed(task_id):
+
+    update_task(task_id, 1)
+    display_tasks()
+
+
 def display_tasks():
+
     for widget in task_frame.winfo_children():
         widget.destroy()
-
 
     tasks = get_tasks()
     for task in tasks:
         task_id = task[0]
         task_name = task[1]
+        completed = task[2]
 
 
-        task_label = tk.Label(task_frame, text=task_name, width=50)
+        task_label = tk.Label(task_frame, text=task_name, width=50, fg="green" if completed else "black")
         task_label.pack()
 
 
@@ -64,6 +65,11 @@ def display_tasks():
 
         delete_button = tk.Button(task_frame, text="Delete", command=lambda t_id=task_id: delete_task(t_id))
         delete_button.pack()
+
+
+        if completed == 0:
+            complete_button = tk.Button(task_frame, text="Mark as Completed", command=lambda t_id=task_id: mark_task_as_completed(t_id))
+            complete_button.pack()
 
 
 def delete_task(task_id):
@@ -98,6 +104,7 @@ def run_gui():
     display_tasks()
 
     root.mainloop()
+
 
 if __name__ == "__main__":
     run_gui()
