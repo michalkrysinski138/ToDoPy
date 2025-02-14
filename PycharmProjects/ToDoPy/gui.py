@@ -1,10 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
 from db import create_task, get_tasks, update_task
+import tkinter.simpledialog as simpledialog
 
 import tkinter as tk
 from tkinter import messagebox
 from db import create_task, get_tasks
+import sqlite3
 
 
 def add_task():
@@ -18,19 +20,42 @@ def add_task():
     else:
         messagebox.showwarning("Input Error", "Please enter a task name")
 
-def display_tasks():
+def edit_task(task_id):
 
+    new_task_name = simpledialog.askstring("Edit Task", "Enter new task name:")
+
+    if new_task_name:
+        update_task_name_in_db(task_id, new_task_name)
+        display_tasks()
+
+def connect_db():
+    print("Łączenie z bazą danych...")
+    return sqlite3.connect('ToDoPy.db', timeout=10)
+
+def update_task_name_in_db(task_id, new_name):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE tasks SET task_name = ? WHERE id = ?", (new_name, task_id))
+    conn.commit()
+    conn.close()
+
+
+def display_tasks():
     for widget in task_frame.winfo_children():
         widget.destroy()
 
-
     tasks = get_tasks()
-    print("Pobrane zadania:", tasks)
-
-
     for task in tasks:
-        task_label = tk.Label(task_frame, text=task[1], width=50)
+        task_id = task[0]  # Pobieramy ID zadania
+        task_name = task[1]
+
+        # Wyświetlanie nazwy zadania
+        task_label = tk.Label(task_frame, text=task_name, width=50)
         task_label.pack()
+
+        # Dodanie przycisku edytowania
+        edit_button = tk.Button(task_frame, text="Edit", command=lambda t_id=task_id: edit_task(t_id))
+        edit_button.pack()
 
 def run_gui():
     global task_entry, task_frame
