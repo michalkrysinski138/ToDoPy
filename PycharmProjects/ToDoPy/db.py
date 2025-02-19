@@ -1,12 +1,28 @@
 import sqlite3
 
-
 def connect_db():
-    print("Łączenie z bazą danych...")
-    return sqlite3.connect('ToDoPy.db', timeout=10)
+    try:
+        conn = sqlite3.connect('ToDoPy.db', timeout=10)
+        return conn
+    except sqlite3.Error as e:
+        print(f"Błąd połączenia z bazą danych: {e}")
+        return None
 
+def create_table():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_name TEXT NOT NULL,
+            completed INTEGER NOT NULL DEFAULT 0
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 def create_task(task_name):
+
     try:
         conn = connect_db()
         cursor = conn.cursor()
@@ -18,16 +34,13 @@ def create_task(task_name):
     finally:
         conn.close()
 
-
 def get_tasks():
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id, task_name, completed FROM tasks")
     tasks = cursor.fetchall()
-    print("Pobrane zadania z bazy:", tasks)
     conn.close()
     return tasks
-
 
 def update_task(id, completed):
     conn = connect_db()
@@ -35,7 +48,6 @@ def update_task(id, completed):
     cursor.execute("UPDATE tasks SET completed = ? WHERE id = ?", (completed, id))
     conn.commit()
     conn.close()
-
 
 def delete_task(task_id):
     conn = connect_db()
