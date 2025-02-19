@@ -1,13 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
-from db import create_task, get_tasks, update_task
-import sqlite3
+from models import create_task, get_tasks, update_task, delete_task
 import time
 
 def update_time():
-    current_time = time.strftime('%A, %Y-%m-%d %H:%M')  # 'A' to pełna nazwa dnia tygodnia
+    current_time = time.strftime('%A, %Y-%m-%d %H:%M')
     time_label.config(text=current_time)
-    time_label.after(60000, update_time)  # Odświeżaj co minutę
+    time_label.after(60000, update_time)
 
 def run_gui():
     global task_entry, task_frame, time_label
@@ -15,7 +14,6 @@ def run_gui():
     root = tk.Tk()
     root.title("ToDoPy - Task Manager")
 
-    # Tworzymy Canvas i Scrollbar dla przewijania zadań
     canvas = tk.Canvas(root)
     scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
     canvas.configure(yscrollcommand=scrollbar.set)
@@ -32,16 +30,12 @@ def run_gui():
         lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
     )
 
-    # Dodajemy Label z aktualnym czasem w lewym dolnym rogu aplikacji
     time_label = tk.Label(root, font=('Arial', 12), fg='black', anchor="w")
     time_label.pack(side="left", padx=10, pady=10, anchor="sw")
 
-    # Rozpoczynamy aktualizację czasu
     update_time()
-
     display_tasks()
 
-    # Przycisk dodawania zadania umieszczony poniżej zadań
     add_button = tk.Button(root, text="Add", command=add_task_window, bg='white', fg='#42a5f5', font=('Arial', 12, 'bold'))
     add_button.pack(pady=10, side="bottom", anchor="w")
 
@@ -67,15 +61,12 @@ def display_tasks():
 
         options_frame = tk.Frame(task_frame, bg='#f0f0f0')
 
-        # Przycisk do edycji
         edit_button = tk.Button(options_frame, text="Edit", command=lambda t_id=task_id: edit_task(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
         edit_button.grid(row=0, column=0, padx=5, pady=5)
 
-        # Przycisk do usunięcia
         delete_button = tk.Button(options_frame, text="Delete", command=lambda t_id=task_id: delete_task(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
         delete_button.grid(row=0, column=1, padx=5, pady=5)
 
-        # Przycisk do oznaczania jako wykonane/odznaczania
         if completed == 0:
             mark_button = tk.Button(options_frame, text="Mark as Completed", command=lambda t_id=task_id: mark_task_as_completed(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
             mark_button.grid(row=0, column=2, padx=5, pady=5)
@@ -95,13 +86,13 @@ def edit_task(task_id):
     label.pack(pady=10)
 
     task_name_entry = tk.Entry(edit_window, width=50)
-    task_name_entry.insert(0, task_name)  # Wstawiamy aktualną nazwę zadania do pola
+    task_name_entry.insert(0, task_name)
     task_name_entry.pack(pady=10)
 
     def update_task_name():
         new_name = task_name_entry.get()
         if new_name:
-            update_task_name_in_db(task_id, new_name)  # Zaktualizuj zadanie w bazie danych
+            update_task_name_in_db(task_id, new_name)
             edit_window.destroy()
             display_tasks()
         else:
@@ -144,13 +135,6 @@ def unmark_task_as_completed(task_id):
     update_task(task_id, 0)
     display_tasks()
 
-def update_task(task_id, completed):
-    conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE tasks SET completed = ? WHERE id = ?", (completed, task_id))
-    conn.commit()
-    conn.close()
-
 def add_task_window():
     add_window = tk.Toplevel()
     add_window.title("Add Task")
@@ -174,27 +158,3 @@ def add_task_window():
     submit_button.pack(pady=10)
 
     add_window.mainloop()
-
-def create_task(task_name):
-    conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO tasks (task_name, completed) VALUES (?, ?)", (task_name, 0))
-    conn.commit()
-    conn.close()
-
-def connect_db():
-    print("Łączenie z bazą danych...")
-    return sqlite3.connect('ToDoPy.db', timeout=10)
-
-def get_tasks():
-    conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM tasks")
-    tasks = cursor.fetchall()
-    conn.close()
-    return tasks
-
-if __name__ == "__main__":
-    run_gui()
-
-
