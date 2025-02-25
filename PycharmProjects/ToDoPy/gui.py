@@ -9,11 +9,10 @@ def update_time():
     time_label.after(60000, update_time)
 
 def run_gui():
-    global task_entry, task_frame, time_label, filter_var
+    global task_entry, task_frame, time_label, filter_var, search_entry
 
     root = tk.Tk()
     root.title("ToDoPy - Lista zadań")
-
 
     filter_var = tk.StringVar(value="all")
 
@@ -44,6 +43,16 @@ def run_gui():
 
     create_filter_buttons(root)
 
+
+    search_label = tk.Label(root, text="Wyszukaj zadanie:", font=('Arial', 12))
+    search_label.pack(side="top", anchor="w", padx=10, pady=5)
+
+    search_entry = tk.Entry(root, font=('Arial', 12))
+    search_entry.pack(side="top", anchor="w", padx=10, pady=5)
+
+    search_button = tk.Button(root, text="Szukaj", command=search_tasks, bg='white', fg='#42a5f5', font=('Arial', 12, 'bold'))
+    search_button.pack(side="top", anchor="w", padx=10, pady=10)
+
     root.mainloop()
 
 def create_filter_buttons(root):
@@ -61,22 +70,25 @@ def create_filter_buttons(root):
 
 def filter_tasks():
     selected_filter = filter_var.get()
-
+    search_term = search_entry.get()
 
     if selected_filter == "all":
-        tasks = get_tasks()
+        tasks = get_tasks(search_term=search_term)
     elif selected_filter == "completed":
-        tasks = get_tasks(completed=True)
+        tasks = get_tasks(completed=True, search_term=search_term)
     elif selected_filter == "not_completed":
-        tasks = get_tasks(completed=False)
+        tasks = get_tasks(completed=False, search_term=search_term)
 
+    display_tasks(tasks)
 
+def search_tasks():
+    search_term = search_entry.get()
+    tasks = get_tasks(search_term=search_term)
     display_tasks(tasks)
 
 def display_tasks(tasks=None):
     if tasks is None:
         tasks = get_tasks()
-
 
     for widget in task_frame.winfo_children():
         widget.destroy()
@@ -169,6 +181,7 @@ def add_task_window():
 
     submit_button = tk.Button(add_window, text="Dodaj zadanie", command=add_task, bg='white', fg='#42a5f5', font=('Arial', 12, 'bold'))
     submit_button.pack(pady=10)
+
 
 
 
