@@ -16,11 +16,19 @@ def create_task(task_name):
         conn.commit()
         conn.close()
 
-def get_tasks():
+def get_tasks(completed=None):
     conn = connect_db()
     if conn is not None:
         cursor = conn.cursor()
-        cursor.execute("SELECT id, task_name, completed FROM tasks")
+
+
+        if completed is None:
+            cursor.execute("SELECT id, task_name, completed FROM tasks ORDER BY completed DESC, id ASC")
+        elif completed:
+            cursor.execute("SELECT id, task_name, completed FROM tasks WHERE completed = 1 ORDER BY id ASC")
+        else:
+            cursor.execute("SELECT id, task_name, completed FROM tasks WHERE completed = 0 ORDER BY id ASC")
+
         tasks = cursor.fetchall()
         conn.close()
         return tasks
@@ -60,3 +68,4 @@ def update_task_name_in_db(task_id, new_name):
         cursor.execute("UPDATE tasks SET task_name = ? WHERE id = ?", (new_name, task_id))
         conn.commit()
         conn.close()
+
