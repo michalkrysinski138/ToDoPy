@@ -47,7 +47,7 @@ python app.py
 
 Mark tasks as completed: You can mark a task as completed and change its status.
 
-**File Structure:**
+## File Structure 
 
 **app.py**
 
@@ -97,7 +97,7 @@ Responsible for connecting to the SQLite database and managing the task table. I
 
 *delete_task()* – Deletes a task.
 
-**Run the application:** 
+## Run the application 
 
 After installing dependencies and activating the environment, run the application:
 
