@@ -24,18 +24,14 @@ def get_tasks(completed=None, search_term=None):
     if conn is not None:
         cursor = conn.cursor()
 
-
         query = "SELECT id, task_name, completed FROM tasks"
         conditions = []
 
-        # Dodajemy warunek na 'completed' jeśli jest podany
         if completed is not None:
             conditions.append(f"completed = {completed}")
 
-
         if search_term:
             conditions.append(f"task_name LIKE '%{search_term}%'")
-
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -49,11 +45,11 @@ def get_tasks(completed=None, search_term=None):
     return []
 
 
-def update_task(id, completed):
+def update_task(task_id, completed):
     conn = connect_db()
     if conn is not None:
         cursor = conn.cursor()
-        cursor.execute("UPDATE tasks SET completed = ? WHERE id = ?", (completed, id))
+        cursor.execute("UPDATE tasks SET completed = ? WHERE id = ?", (completed, task_id))
         conn.commit()
         conn.close()
 
@@ -86,4 +82,5 @@ def update_task_name_in_db(task_id, new_name):
         cursor.execute("UPDATE tasks SET task_name = ? WHERE id = ?", (new_name, task_id))
         conn.commit()
         conn.close()
+
 

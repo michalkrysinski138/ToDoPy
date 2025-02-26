@@ -3,16 +3,25 @@ from tkinter import messagebox
 from models import create_task, get_tasks, update_task, delete_task_from_db, get_task_name, update_task_name_in_db
 import time
 
+
+task_entry = None
+task_frame = None
+time_label = None
+filter_var = None
+search_entry = None
+
 def update_time():
-    current_time = time.strftime('%A, %Y-%m-%d %H:%M')
-    time_label.config(text=current_time)
-    time_label.after(60000, update_time)
+    if time_label is not None:
+        current_time = time.strftime('%A, %Y-%m-%d %H:%M')
+        time_label.config(text=current_time)
+        time_label.after(60000, update_time)
 
 def run_gui():
     global task_entry, task_frame, time_label, filter_var, search_entry
 
     root = tk.Tk()
     root.title("ToDoPy - Lista zadań")
+
 
     filter_var = tk.StringVar(value="all")
 
@@ -43,7 +52,6 @@ def run_gui():
 
     create_filter_buttons(root)
 
-
     search_label = tk.Label(root, text="Wyszukaj zadanie:", font=('Arial', 12))
     search_label.pack(side="top", anchor="w", padx=10, pady=5)
 
@@ -56,6 +64,7 @@ def run_gui():
     root.mainloop()
 
 def create_filter_buttons(root):
+    global filter_var
     filter_frame = tk.Frame(root)
     filter_frame.pack(pady=10, anchor='w')
 
@@ -69,7 +78,8 @@ def create_filter_buttons(root):
     not_completed_button.pack(side="left", padx=5)
 
 def filter_tasks():
-    selected_filter = filter_var.get()
+    global filter_var
+    selected_filter = filter_var.get() if filter_var else "all"
     search_term = search_entry.get()
 
     if selected_filter == "all":
@@ -90,38 +100,39 @@ def display_tasks(tasks=None):
     if tasks is None:
         tasks = get_tasks()
 
-    for widget in task_frame.winfo_children():
-        widget.destroy()
+    if task_frame:
+        for widget in task_frame.winfo_children():
+            widget.destroy()
 
-    for index, task in enumerate(tasks):
-        task_id = task[0]
-        task_name = task[1]
-        completed = task[2]
+        for index, task in enumerate(tasks):
+            task_id = task[0]
+            task_name = task[1]
+            completed = task[2]
 
-        task_color = 'green' if completed else 'black'
+            task_color = 'green' if completed else 'black'
 
-        task_label = tk.Label(task_frame, text=f"{index + 1}. ", width=5, font=('Arial', 14, 'bold'), bg='#f0f0f0', anchor='w', fg=task_color)
-        task_name_label = tk.Label(task_frame, text=task_name, width=50, font=('Arial', 14), bg='#f0f0f0', anchor='w', fg=task_color, wraplength=350)
+            task_label = tk.Label(task_frame, text=f"{index + 1}. ", width=5, font=('Arial', 14, 'bold'), bg='#f0f0f0', anchor='w', fg=task_color)
+            task_name_label = tk.Label(task_frame, text=task_name, width=50, font=('Arial', 14), bg='#f0f0f0', anchor='w', fg=task_color, wraplength=350)
 
-        task_label.grid(row=index, column=0, padx=10, pady=5, sticky='w')
-        task_name_label.grid(row=index, column=1, padx=10, pady=5, sticky='w')
+            task_label.grid(row=index, column=0, padx=10, pady=5, sticky='w')
+            task_name_label.grid(row=index, column=1, padx=10, pady=5, sticky='w')
 
-        options_frame = tk.Frame(task_frame, bg='#f0f0f0')
+            options_frame = tk.Frame(task_frame, bg='#f0f0f0')
 
-        edit_button = tk.Button(options_frame, text="Edytuj", command=lambda t_id=task_id: edit_task(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
-        edit_button.grid(row=0, column=0, padx=5, pady=5)
+            edit_button = tk.Button(options_frame, text="Edytuj", command=lambda t_id=task_id: edit_task(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
+            edit_button.grid(row=0, column=0, padx=5, pady=5)
 
-        delete_button = tk.Button(options_frame, text="Usuń", command=lambda t_id=task_id: delete_task(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
-        delete_button.grid(row=0, column=1, padx=5, pady=5)
+            delete_button = tk.Button(options_frame, text="Usuń", command=lambda t_id=task_id: delete_task(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
+            delete_button.grid(row=0, column=1, padx=5, pady=5)
 
-        if completed == 0:
-            mark_button = tk.Button(options_frame, text="Gotowe", command=lambda t_id=task_id: mark_task_as_completed(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
-            mark_button.grid(row=0, column=2, padx=5, pady=5)
-        else:
-            unmark_button = tk.Button(options_frame, text="Anuluj", command=lambda t_id=task_id: unmark_task_as_completed(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
-            unmark_button.grid(row=0, column=2, padx=5, pady=5)
+            if completed == 0:
+                mark_button = tk.Button(options_frame, text="Gotowe", command=lambda t_id=task_id: mark_task_as_completed(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
+                mark_button.grid(row=0, column=2, padx=5, pady=5)
+            else:
+                unmark_button = tk.Button(options_frame, text="Anuluj", command=lambda t_id=task_id: unmark_task_as_completed(t_id), bg='#6A4C9C', fg='white', font=('Arial', 12, 'bold'))
+                unmark_button.grid(row=0, column=2, padx=5, pady=5)
 
-        options_frame.grid(row=index, column=2, padx=5, pady=5, sticky='w')
+            options_frame.grid(row=index, column=2, padx=5, pady=5, sticky='w')
 
 def edit_task(task_id):
     task_name = get_task_name(task_id)
@@ -148,23 +159,11 @@ def edit_task(task_id):
     submit_button = tk.Button(edit_window, text="Edytuj", command=update_task_name, bg='white', fg='#42a5f5', font=('Arial', 12, 'bold'))
     submit_button.pack(pady=10)
 
-def delete_task(task_id):
-    delete_task_from_db(task_id)
-    display_tasks()
-
-def mark_task_as_completed(task_id):
-    update_task(task_id, 1)
-    display_tasks()
-
-def unmark_task_as_completed(task_id):
-    update_task(task_id, 0)
-    display_tasks()
-
 def add_task_window():
     add_window = tk.Toplevel()
     add_window.title("Dodaj zadanie")
 
-    label = tk.Label(add_window, text="Dodaj zadanie:", font=('Arial', 12))
+    label = tk.Label(add_window, text="Nowe zadanie", font=('Arial', 12))
     label.pack(pady=10)
 
     task_name_entry = tk.Entry(add_window, width=50)
@@ -179,8 +178,26 @@ def add_task_window():
         else:
             messagebox.showwarning("Input Error", "Please enter a task name")
 
-    submit_button = tk.Button(add_window, text="Dodaj zadanie", command=add_task, bg='white', fg='#42a5f5', font=('Arial', 12, 'bold'))
+    submit_button = tk.Button(add_window, text="Dodaj", command=add_task, bg='white', fg='#42a5f5', font=('Arial', 12, 'bold'))
     submit_button.pack(pady=10)
+
+def delete_task(task_id):
+    delete_task_from_db(task_id)
+    display_tasks()
+
+def mark_task_as_completed(task_id):
+    update_task(task_id, True)
+    display_tasks()
+
+def unmark_task_as_completed(task_id):
+    update_task(task_id, False)
+    display_tasks()
+
+if __name__ == "__main__":
+    run_gui()
+
+
+
 
 
 

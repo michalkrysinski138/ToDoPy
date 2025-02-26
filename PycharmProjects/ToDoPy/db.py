@@ -24,6 +24,7 @@ def create_table():
         conn.close()
 
 def create_task(task_name):
+    conn = None
     try:
         conn = connect_db()
         if conn is not None:
@@ -40,28 +41,46 @@ def create_task(task_name):
             conn.close()
 
 def get_tasks():
-    conn = connect_db()
-    if conn is not None:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, task_name, completed FROM tasks")
-        tasks = cursor.fetchall()
-        conn.close()
-        print("Pobrane zadania z bazy:", tasks)
-        return tasks
-    return []
+    conn = None
+    tasks = []
+    try:
+        conn = connect_db()
+        if conn is not None:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, task_name, completed FROM tasks")
+            tasks = cursor.fetchall()
+            print("Pobrane zadania z bazy:", tasks)
+    except sqlite3.Error as e:
+        print("Błąd przy pobieraniu zadań:", e)
+    finally:
+        if conn:
+            conn.close()
+    return tasks
 
-def update_task(id, completed):
-    conn = connect_db()
-    if conn is not None:
-        cursor = conn.cursor()
-        cursor.execute("UPDATE tasks SET completed = ? WHERE id = ?", (completed, id))
-        conn.commit()
-        conn.close()
+def update_task(task_id, completed):
+    conn = None
+    try:
+        conn = connect_db()
+        if conn is not None:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE tasks SET completed = ? WHERE id = ?", (completed, task_id))
+            conn.commit()
+    except sqlite3.Error as e:
+        print("Błąd przy aktualizacji zadania:", e)
+    finally:
+        if conn:
+            conn.close()
 
 def delete_task(task_id):
-    conn = connect_db()
-    if conn is not None:
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
-        conn.commit()
-        conn.close()
+    conn = None
+    try:
+        conn = connect_db()
+        if conn is not None:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+            conn.commit()
+    except sqlite3.Error as e:
+        print("Błąd przy usuwaniu zadania:", e)
+    finally:
+        if conn:
+            conn.close()
