@@ -63,3 +63,28 @@ create_table() – Creates the tasks table if it does not exist.
 get_tasks() – Fetches all tasks from the database.
 update_task() – Updates the status of a task.
 delete_task() – Deletes a task.
+
+
+
+Installation: 
+
+Install dependencies: Make sure you have Python installed (at least version 3.6). To install the required libraries, use the following command:
+
+
+pip install -r requirements.txt
+Create a virtual environment (recommended): You can use a virtual environment to manage project dependencies:
+
+
+python -m venv .venv
+For Unix/MacOS:
+
+
+source .venv/bin/activate
+For Windows:
+
+
+.venv\Scripts\activate
+Run the application: After installing dependencies and activating the environment, run the application:
+
+
+python app.py
